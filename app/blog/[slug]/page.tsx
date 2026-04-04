@@ -6,6 +6,27 @@ import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: Props) {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
+  if (!post) return {}
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://haircolor-lab.vercel.app'
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [`${baseUrl}/og?title=${encodeURIComponent(post.title)}&genre=${encodeURIComponent(post.genre)}&site=ヘアカラーLAB`],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      images: [`${baseUrl}/og?title=${encodeURIComponent(post.title)}&genre=${encodeURIComponent(post.genre)}&site=ヘアカラーLAB`],
+    },
+  }
+}
+
 type Props = { params: Promise<{ slug: string }> }
 
 export default async function PostPage({ params }: Props) {
