@@ -2,5 +2,10 @@
 module.exports = {
   siteUrl: 'https://haircolor-lab.vercel.app',
   generateRobotsTxt: true,
-  outDir: './public',
-};
+  robotsTxtOptions: {
+    additionalSitemaps: ['https://haircolor-lab.vercel.app/sitemap.xml'],
+  },
+  changefreq: 'daily',
+  priority: 0.7,
+  sitemapSize: 5000,
+}
