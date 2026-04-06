@@ -26,6 +26,12 @@ export async function generateStaticParams() {
   return posts.map((post: any) => ({ slug: post.slug }))
 }
 
+export async function generateStaticParams() {
+  const { getAllPosts } = await import('@/lib/posts')
+  const posts = getAllPosts()
+  return posts.map((post: any) => ({ slug: post.slug }))
+}
+
 type Props = { params: Promise<{ slug: string }> }
 
 export default async function PostPage({ params }: Props) {
