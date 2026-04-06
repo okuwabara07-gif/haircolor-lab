@@ -15,7 +15,7 @@ export function getAllPosts() {
       const fullPath = path.join(postsDirectory, fileName)
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
-      return { slug, content, ...data } as any
+      return { slug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
     })
 }
 
@@ -29,7 +29,7 @@ export function getPostBySlug(slug: string) {
     if (fs.existsSync(fullPath)) {
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
-      return { slug, content, ...data } as any
+      return { slug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
     }
   }
 
@@ -42,7 +42,7 @@ export function getPostBySlug(slug: string) {
       const fullPath = path.join(postsDirectory, fileName)
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
-      return { slug: fileSlug, content, ...data } as any
+      return { slug: fileSlug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
     }
   }
 
