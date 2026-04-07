@@ -15,21 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Generate articles
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          AMAZON_TRACKING_ID: ${{ secrets.AMAZON_TRACKING_ID }}
-          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
-        run: |
-          COUNT=$(find content/blog -name "*.mdx" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-          echo "記事数: $COUNT"
-          if [ "$COUNT" -lt 100 ]; then node scripts/auto-generate.js; fi
-      - name: Commit articles
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add content/
-          git diff --staged --quiet || (git commit -m "feat: 記事自動生成" && git push)
       - name: Build
         run: npm ci && npm run build
         env:
