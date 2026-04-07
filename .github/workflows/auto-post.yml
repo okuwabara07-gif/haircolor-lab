@@ -16,11 +16,7 @@ jobs:
         with:
           node-version: '20'
       - name: Build
-        run: - name: Build
         run: npm install && npm run build
-        env:
-          AMAZON_TRACKING_ID: ${{ secrets.AMAZON_TRACKING_ID }}
-          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
         env:
           AMAZON_TRACKING_ID: ${{ secrets.AMAZON_TRACKING_ID }}
           RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
