@@ -3,7 +3,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   images: { unoptimized: true },
   trailingSlash: true,
-  basePath: '',
-  assetPrefix: '',
+  basePath: '/haircolor-lab',
+  assetPrefix: '/haircolor-lab',
 }
 export default nextConfig
