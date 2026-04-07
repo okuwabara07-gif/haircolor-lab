@@ -1,13 +1,13 @@
-name: Auto Post Articles
-
+name: Auto Post and Deploy
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch:
-
 jobs:
-  generate:
+  build-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,40 +15,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check article count
-        id: check
-        run: |
-          COUNT=$(find content/blog -name "*.mdx" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-          echo "count=$COUNT" >> $GITHUB_OUTPUT
-          echo "現在の記事数: $COUNT"
-          if [ "$COUNT" -ge 50 ]; then
-            echo "reached=true" >> $GITHUB_OUTPUT
-            echo "50記事達成済み - スキップ"
-          else
-            echo "reached=false" >> $GITHUB_OUTPUT
-            echo "記事生成開始 (現在${COUNT}記事)"
-          fi
       - name: Generate articles
-        if: steps.check.outputs.reached == 'false'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AMAZON_TRACKING_ID: ${{ secrets.AMAZON_TRACKING_ID }}
           RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
-        run: node scripts/auto-generate.js
-      - name: Commit and push
-        if: steps.check.outputs.reached == 'false'
+        run: |
+          COUNT=$(find content/blog -name "*.mdx" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+          echo "記事数: $COUNT"
+          if [ "$COUNT" -lt 100 ]; then node scripts/auto-generate.js; fi
+      - name: Commit articles
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add content/blog/
-          git diff --staged --quiet || git commit -m "auto: add articles $(date '+%Y-%m-%d %H:%M')"
-          git push
-      - name: Cost alert
-        run: |
-          COUNT=$(find content/blog -name "*.mdx" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-          COST=$((COUNT * 10))
-          echo "累積コスト概算: ¥${COST}円"
-          if [ $COST -gt 30000 ]; then
-            echo "警告: コストが30000円を超えています ${COST}円"
-            exit 1
-          fi
+          git add content/
+          git diff --staged --quiet || (git commit -m "feat: 記事自動生成" && git push)
+      - name: Build
+        run: npm ci && npm run build
+        env:
+          AMAZON_TRACKING_ID: ${{ secrets.AMAZON_TRACKING_ID }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          force_orphan: true
