@@ -1,4 +1,0 @@
-:HL["https://source.unsplash.com/800x360/?2026%20%20TOP10,luxury hair salon beauty gold","image"]
-:HL["https://source.unsplash.com/800x400/?2026%20%20TOP10,luxury hair salon beauty gold","image"]
-:HL["https://source.unsplash.com/800x350/?haircare%202026%20%20TOP10,luxury hair salon beauty gold","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"1774732640408","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"arfD56_BXbeJrMW6XLK1d"}
