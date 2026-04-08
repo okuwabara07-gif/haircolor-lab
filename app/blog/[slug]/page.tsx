@@ -15,8 +15,21 @@ export async function generateMetadata({ params }: any) {
 }
 
 function img(kw: string, w: number, h: number) {
-  const seed = Math.abs(kw.split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0))
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`
+  const seed = Math.abs(kw.split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0)) % 9999
+  const en = kw.replace(/[　-鿿＀-￯゠-ヿ぀-ゟ]/g,'').trim()
+  const genre = en.toLowerCase()
+  let topic = 'beauty,salon,cosmetics'
+  if(/hair|ヘア|白髪|カラー/.test(kw)) topic = 'hair,salon,beauty'
+  else if(/スキンケア|skin|美白|保湿|化粧水/.test(kw)) topic = 'skincare,cosmetics,beauty'
+  else if(/メイク|makeup|コスメ|口紅|アイ/.test(kw)) topic = 'makeup,cosmetics,beauty'
+  else if(/ダイエット|diet|痩せ|体重/.test(kw)) topic = 'fitness,diet,health'
+  else if(/投資|FX|株|仮想通貨|NISA|保険|ローン/.test(kw)) topic = 'finance,business,money'
+  else if(/副業|フリーランス|転職|キャリア/.test(kw)) topic = 'business,work,career'
+  else if(/サプリ|supplement|プロテイン|栄養/.test(kw)) topic = 'health,supplement,nutrition'
+  else if(/ネイル|nail/.test(kw)) topic = 'nail,beauty,hands'
+  else if(/香水|perfume/.test(kw)) topic = 'perfume,fragrance,luxury'
+  else if(/韓国|kbeauty|Korean/.test(kw)) topic = 'korean,beauty,cosmetics'
+  return `https://loremflickr.com/${w}/${h}/${topic}?lock=${seed}`
 }
 
 type Props = { params: Promise<{ slug: string }> }

@@ -2,8 +2,20 @@ import Link from 'next/link'
 import { getAllPosts } from '@/lib/posts'
 
 function thumb(title: string, genre: string) {
-  const seed = Math.abs((title+genre).split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0))
-  return `https://picsum.photos/seed/${seed}/400/200`
+  const seed = Math.abs((title+genre).split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0)) % 9999
+  const kw = title + genre
+  let topic = 'beauty,salon,cosmetics'
+  if(/hair|ヘア|白髪|カラー/.test(kw)) topic = 'hair,salon,beauty'
+  else if(/スキンケア|skin|美白|保湿/.test(kw)) topic = 'skincare,cosmetics,beauty'
+  else if(/メイク|makeup|コスメ/.test(kw)) topic = 'makeup,cosmetics,beauty'
+  else if(/ダイエット|diet|痩せ/.test(kw)) topic = 'fitness,diet,health'
+  else if(/投資|FX|株|NISA|保険|ローン/.test(kw)) topic = 'finance,business,money'
+  else if(/副業|フリーランス|転職/.test(kw)) topic = 'business,work,career'
+  else if(/サプリ|プロテイン/.test(kw)) topic = 'health,supplement,nutrition'
+  else if(/ネイル|nail/.test(kw)) topic = 'nail,beauty,hands'
+  else if(/香水|perfume/.test(kw)) topic = 'perfume,fragrance,luxury'
+  else if(/韓国|Korean/.test(kw)) topic = 'korean,beauty,cosmetics'
+  return `https://loremflickr.com/400/200/${topic}?lock=${seed}`
 }
 
 export default function BlogPage() {
