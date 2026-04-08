@@ -6,11 +6,6 @@ function thumb(title: string, genre: string) {
   return `https://picsum.photos/seed/${seed}/400/200`
 }
 
-function thumb(title: string, genre: string) {
-  const seed = Math.abs((title+genre).split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0))
-  return `https://picsum.photos/seed/${seed}/400/200`
-}
-
 export default function BlogPage() {
   const allPosts = getAllPosts()
   const genres = Array.from(new Set(allPosts.map((p: any) => p.genre).filter(Boolean))) as string[]
