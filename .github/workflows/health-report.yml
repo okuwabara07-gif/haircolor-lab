@@ -15,36 +15,9 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
         run: python3 scripts/health_check.py
-      - name: Send email via Resend
+      - name: Send notification
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          OK_COUNT: ${{ steps.rep.outputs.ok }}
-          NG_COUNT: ${{ steps.rep.outputs.ng }}
-          ARTICLES: ${{ steps.rep.outputs.articles }}
-          READY: ${{ steps.rep.outputs.ready }}
-        run: |
-          BODY=$(cat report.txt)
-          python3 << 'EOF'
-import urllib.request, json, os
-key = os.environ["RESEND_API_KEY"]
-ok = os.environ.get("OK_COUNT","?")
-ng = os.environ.get("NG_COUNT","?")
-articles = os.environ.get("ARTICLES","?")
-ready = os.environ.get("READY","?")
-with open("report.txt") as f:
-    body = f.read()
-data = json.dumps({
-    "from": "AOKAE Bot <onboarding@resend.dev>",
-    "to": ["o.kuwabara07@gmail.com"],
-    "subject": f"AOKAE朝レポ 正常{ok}件 異常{ng}件 記事{articles}件 AdSense可能{ready}件",
-    "text": body
-}).encode()
-req = urllib.request.Request(
-    "https://api.resend.com/emails",
-    data=data,
-    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-    method="POST"
-)
-res = urllib.request.urlopen(req).read()
-print("送信完了:", res.decode())
-EOF
+          NOTIFY_SUBJECT: "AOKAE朝レポ 正常${{ steps.rep.outputs.ok }}件 異常${{ steps.rep.outputs.ng }}件 記事${{ steps.rep.outputs.articles }}件 AdSense可能${{ steps.rep.outputs.ready }}件"
+          NOTIFY_BODY_FILE: report.txt
+        run: python3 scripts/notify.py
