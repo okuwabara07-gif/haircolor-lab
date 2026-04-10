@@ -14,7 +14,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
         run: python3 scripts/adsense_check.py
-      - name: Send notification
+      - name: Send report
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_SUBJECT: "AOKAE週次 AdSense申請可能${{ steps.chk.outputs.ready }}件"
