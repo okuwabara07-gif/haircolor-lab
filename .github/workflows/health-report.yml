@@ -7,100 +7,14 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Check and report
         id: rep
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          python3 << 'EOF'
-import urllib.request,json,os,time
-token=os.environ["GH_TOKEN"]
-vtoken=os.environ["VERCEL_TOKEN"]
-team="team_x86uuWYVnx2180xgKv4PVAEY"
-repos="acne-lab-jp,affiliate-lab-jp,ai-lab-jp,anti-aging-jp,baby-note-jp,beauty-device-jp,beauty-food-jp,bike-note-jp,body-care-jp,bodymake-lab-jp,calorie-lab-jp,camera-lab-jp,card-note-jp,career-note-jp,childcare-jp,coffee-note-jp,cooking-note-jp,credit-lab-jp,crypto-lab-jp,diet-lab-jp,diet-now,diet-now-jp,diet-recipe-jp,dropshipping-jp,english-lab-jp,eyebrow-lab-jp,eyelash-lab-jp,eyeshadow-lab-jp,fashion-note-jp,fitness-lab-jp,foundation-lab-jp,freelance-note-jp,fx-note-jp,gadget-lab-jp,golf-lab-jp,hair-care-jp,hair-loss-jp,hair-removal-jp,haircolor-lab,handmade-lab-jp,health-note-jp,insurance-note-jp,interior-log-jp,intermittent-fasting-jp,investment-lab-jp,job-change-jp,junior-soccer-jp,kbeauty-brand-jp,kcos-review-jp,kdrama-beauty-jp,keto-lab-jp,kmake-lab-jp,kskin-lab-jp,lip-lab-jp,loan-note-jp,makeup-lab-jp,mama-beauty-jp,mens-beauty-jp,mens-hair-jp,mindfulness-jp,money-note-jp,music-lab-jp,nail-lab-jp,nisa-note-jp,organic-cosme-jp,outdoor-note-jp,over40-beauty-jp,pension-lab-jp,perfume-lab-jp,perm-lab-jp,pet-love-jp,photo-lab-jp,pilates-lab-jp,programming-lab-jp,protein-lab-jp,reading-lab-jp,real-estate-jp,remote-work-jp,running-lab-jp,running-note-jp,sauna-log-jp,saving-lab-jp,side-job-jp,skill-up-jp,skincare-note-jp,sleep-lab-jp,sns-lab-jp,startup-note-jp,stretch-lab-jp,study-lab-jp,sunscreen-lab-jp,supplement-jp,swim-note-jp,tax-lab-jp,teens-beauty-jp,travel-log-jp,web3-lab-jp,whitening-lab-jp,yoga-pose-jp,youtube-lab-jp".split(",")
-ok,ng,fixed,wf_ng=[],[],[],[]
-total_articles=0
-adsense_ready=0
-for r in repos:
-    try:
-        req=urllib.request.Request(f"https://{r}.vercel.app",headers={"User-Agent":"Mozilla/5.0"})
-        req.get_method=lambda:"HEAD"
-        urllib.request.urlopen(req,timeout=8)
-        st=200
-    except urllib.error.HTTPError as e:
-        st=e.code
-    except:
-        st=0
-    arts=0
-    priv=False
-    try:
-        rr=urllib.request.Request(f"https://api.github.com/repos/okuwabara07-gif/{r}/contents/content/blog?per_page=100",headers={"Authorization":f"Bearer {token}"})
-        res=json.loads(urllib.request.urlopen(rr).read())
-        if isinstance(res,list):
-            arts=len(res)
-            total_articles+=arts
-    except:pass
-    try:
-        rr=urllib.request.Request(f"https://api.github.com/repos/okuwabara07-gif/{r}/contents/app/privacy/page.tsx",headers={"Authorization":f"Bearer {token}"})
-        urllib.request.urlopen(rr)
-        priv=True
-    except:pass
-    if arts>=10 and priv:
-        adsense_ready+=1
-    if st==200:
-        ok.append(r)
-    else:
-        ng.append((r,st))
-        try:
-            pr=urllib.request.Request(f"https://api.vercel.com/v9/projects/{r}?teamId={team}",headers={"Authorization":f"Bearer {vtoken}"})
-            pd=json.loads(urllib.request.urlopen(pr).read())
-            pid=pd.get("id","")
-            if pid:
-                fd=json.dumps({"ssoProtection":None}).encode()
-                fr=urllib.request.Request(f"https://api.vercel.com/v9/projects/{pid}?teamId={team}",data=fd,headers={"Authorization":f"Bearer {vtoken}","Content-Type":"application/json"},method="PATCH")
-                urllib.request.urlopen(fr)
-                fixed.append(r)
-        except:pass
-    time.sleep(0.2)
-for r in repos[:30]:
-    try:
-        rr=urllib.request.Request(f"https://api.github.com/repos/okuwabara07-gif/{r}/actions/runs?per_page=1",headers={"Authorization":f"Bearer {token}"})
-        res=json.loads(urllib.request.urlopen(rr).read())
-        runs=res.get("workflow_runs",[])
-        if runs and runs[0].get("conclusion")=="failure":
-            wf_ng.append(r)
-            tr=urllib.request.Request(f"https://api.github.com/repos/okuwabara07-gif/{r}/actions/workflows/auto-post.yml/dispatches",data=json.dumps({"ref":"main"}).encode(),headers={"Authorization":f"Bearer {token}","Content-Type":"application/json"},method="POST")
-            urllib.request.urlopen(tr)
-    except:pass
-    time.sleep(0.2)
-report=f"""AOKAE 日次レポート
-日時: $(date '+%Y-%m-%d %H:%M JST')
-
-サイト稼働
-  正常: {len(ok)}件 / 異常: {len(ng)}件 / 自動修正: {len(fixed)}件
-
-コンテンツ
-  推定総記事数: {total_articles}記事
-  AdSense申請可能: {adsense_ready}件
-
-Workflow
-  失敗自動再起動: {len(wf_ng)}件 {', '.join(wf_ng) if wf_ng else 'なし'}
-
-異常サイト
-  {chr(10).join([f'  - {x[0]}: HTTP {x[1]}' for x in ng]) if ng else '  なし'}
-
-月間コスト概算
-  固定費: 約18,400円
-  API(記事生成): 約{min(total_articles*10,8000)}円
-  合計: 約{18400+min(total_articles*10,8000)}円
-"""
-with open("report.txt","w") as f:
-    f.write(report)
-with open(os.environ["GITHUB_OUTPUT"],"a") as f:
-    f.write(f"ok={len(ok)}\nng={len(ng)}\narticles={total_articles}\nready={adsense_ready}\n")
-print(report)
-EOF
+          GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
+        run: python3 scripts/health_check.py
       - name: Send email
         uses: dawidd6/action-send-mail@v3
         with:
@@ -109,7 +23,7 @@ EOF
           secure: false
           username: ${{ secrets.GMAIL_USER }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "AOKAE朝レポ 正常${{ steps.rep.outputs.ok }}件 異常${{ steps.rep.outputs.ng }}件 記事${{ steps.rep.outputs.articles }}件 AdSense申請可能${{ steps.rep.outputs.ready }}件"
+          subject: "AOKAE朝レポ 正常${{ steps.rep.outputs.ok }}件 異常${{ steps.rep.outputs.ng }}件 記事${{ steps.rep.outputs.articles }}件 AdSense可能${{ steps.rep.outputs.ready }}件"
           to: o.kuwabara07@gmail.com
           from: AOKAE Bot
           body: file://report.txt
