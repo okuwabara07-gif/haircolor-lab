@@ -16,15 +16,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python3 scripts/adsense_deploy.py
-      - name: Notify
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
-          username: ${{ secrets.GMAIL_USER }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "AOKAE AdSense全サイト展開完了"
-          to: o.kuwabara07@gmail.com
-          from: AOKAE Bot
-          body: "AdSenseコードを全サイトに展開しました。"
+      - name: Notify via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          python3 << 'EOF'
+import urllib.request, json, os
+key = os.environ["RESEND_API_KEY"]
+data = json.dumps({
+    "from": "AOKAE Bot <onboarding@resend.dev>",
+    "to": ["o.kuwabara07@gmail.com"],
+    "subject": "AOKAE AdSense全サイト展開完了",
+    "text": "AdSenseコードを全サイトに展開しました。"
+}).encode()
+req = urllib.request.Request(
+    "https://api.resend.com/emails",
+    data=data,
+    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    method="POST"
+)
+urllib.request.urlopen(req)
+print("通知送信完了")
+EOF
