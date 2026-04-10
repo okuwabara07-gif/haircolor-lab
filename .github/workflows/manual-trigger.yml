@@ -16,15 +16,27 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TARGET: ${{ github.event.inputs.target }}
         run: python3 scripts/manual_trigger.py
-      - name: Notify
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
-          username: ${{ secrets.GMAIL_USER }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "AOKAE 記事生成トリガー完了: ${{ github.event.inputs.target }}"
-          to: o.kuwabara07@gmail.com
-          from: AOKAE Bot
-          body: "記事生成をトリガーしました。対象: ${{ github.event.inputs.target }}"
+      - name: Notify via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TARGET: ${{ github.event.inputs.target }}
+        run: |
+          python3 << 'EOF'
+import urllib.request, json, os
+key = os.environ["RESEND_API_KEY"]
+target = os.environ.get("TARGET","all")
+data = json.dumps({
+    "from": "AOKAE Bot <onboarding@resend.dev>",
+    "to": ["o.kuwabara07@gmail.com"],
+    "subject": f"AOKAE 記事生成トリガー完了: {target}",
+    "text": f"記事生成をトリガーしました。対象: {target}"
+}).encode()
+req = urllib.request.Request(
+    "https://api.resend.com/emails",
+    data=data,
+    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    method="POST"
+)
+urllib.request.urlopen(req)
+print("通知送信完了")
+EOF
