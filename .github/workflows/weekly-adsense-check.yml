@@ -14,15 +14,29 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
         run: python3 scripts/adsense_check.py
-      - name: Send report
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
-          username: ${{ secrets.GMAIL_USER }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "AOKAE週次 AdSense申請可能${{ steps.chk.outputs.ready }}件"
-          to: o.kuwabara07@gmail.com
-          from: AOKAE Bot
-          body: file://adsense_report.txt
+      - name: Send report via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          READY: ${{ steps.chk.outputs.ready }}
+        run: |
+          python3 << 'EOF'
+import urllib.request, json, os
+key = os.environ["RESEND_API_KEY"]
+ready = os.environ.get("READY","?")
+with open("adsense_report.txt") as f:
+    body = f.read()
+data = json.dumps({
+    "from": "AOKAE Bot <onboarding@resend.dev>",
+    "to": ["o.kuwabara07@gmail.com"],
+    "subject": f"AOKAE週次 AdSense申請可能{ready}件",
+    "text": body
+}).encode()
+req = urllib.request.Request(
+    "https://api.resend.com/emails",
+    data=data,
+    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    method="POST"
+)
+urllib.request.urlopen(req)
+print("送信完了")
+EOF
