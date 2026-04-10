@@ -16,9 +16,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TARGET: ${{ github.event.inputs.target }}
         run: python3 scripts/manual_trigger.py
-      - name: Send notification
+      - name: Notify
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_SUBJECT: "AOKAE 記事生成トリガー完了: ${{ github.event.inputs.target }}"
-          NOTIFY_BODY: "記事生成をトリガーしました。対象: ${{ github.event.inputs.target }}"
+          NOTIFY_BODY: "記事生成をトリガーしました。"
         run: python3 scripts/notify.py
