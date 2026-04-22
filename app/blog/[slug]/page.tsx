@@ -2,9 +2,16 @@ import { getPostBySlug, getAllPosts } from '@/lib/posts'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { notFound } from 'next/navigation'
 
+export const revalidate = 60
+
 export async function generateStaticParams() {
-  const posts = getAllPosts()
-  return posts.map((post: any) => ({ slug: post.slug }))
+  try {
+    const posts = getAllPosts()
+    return posts.map((post: any) => ({ slug: post.slug }))
+  } catch (error) {
+    console.error('generateStaticParams error:', error)
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: any) {
