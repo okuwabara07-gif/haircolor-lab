@@ -48,3 +48,48 @@ export function getPostBySlug(slug: string) {
 
   return null
 }
+
+const enPostsDirectory = path.join(process.cwd(), 'content/en/blog')
+
+export function getAllEnPosts() {
+  if (!fs.existsSync(enPostsDirectory)) return []
+  const fileNames = fs.readdirSync(enPostsDirectory)
+  return fileNames
+    .filter(f => f.endsWith('.md') || f.endsWith('.mdx'))
+    .sort((a, b) => b.localeCompare(a))
+    .map(fileName => {
+      const slug = fileName.replace(/\.mdx?$/, '')
+      const fullPath = path.join(enPostsDirectory, fileName)
+      const fileContents = fs.readFileSync(fullPath, 'utf8')
+      const { data, content } = matter(fileContents)
+      return { slug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
+    })
+}
+
+export function getEnPostBySlug(slug: string) {
+  if (!fs.existsSync(enPostsDirectory)) return null
+  const exts = ['.mdx', '.md']
+
+  for (const ext of exts) {
+    const fullPath = path.join(enPostsDirectory, `${slug}${ext}`)
+    if (fs.existsSync(fullPath)) {
+      const fileContents = fs.readFileSync(fullPath, 'utf8')
+      const { data, content } = matter(fileContents)
+      return { slug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
+    }
+  }
+
+  const fileNames = fs.readdirSync(enPostsDirectory)
+  for (const fileName of fileNames) {
+    if (!fileName.endsWith('.md') && !fileName.endsWith('.mdx')) continue
+    const fileSlug = fileName.replace(/\.mdx?$/, '')
+    if (fileSlug === slug || fileSlug.endsWith(slug) || fileSlug.includes(slug)) {
+      const fullPath = path.join(enPostsDirectory, fileName)
+      const fileContents = fs.readFileSync(fullPath, 'utf8')
+      const { data, content } = matter(fileContents)
+      return { slug: fileSlug, content, ...data, date: data.date ? String(data.date).slice(0,10) : '' } as any
+    }
+  }
+
+  return null
+}
